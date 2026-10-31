@@ -1,6 +1,6 @@
 import { getRouterParam, readBody } from 'h3'
-import { prisma } from '../../../../utils/prisma'
-import { requireRole } from '../../../../utils/auth'
+import { prisma } from '../../../../../utils/prisma'
+import { requireRole } from '../../../../../utils/auth'
 
 interface QuizPatchBody {
   title?: string

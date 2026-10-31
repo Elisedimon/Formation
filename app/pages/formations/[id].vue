@@ -304,8 +304,7 @@ const relatedCourses = computed(() => {
                   </span>
                   <h4 class="font-bold text-slate-800">{{ module.title }}</h4>
                   <span class="ml-auto text-xs font-semibold text-emerald-600">
-                    {{ module.lessons.length }} leçon{{ module.lessons.length > 1 ? 's' : '' }}
-                    {{ module.quizzes.length ? ` · {{ module.quizzes.length }} quiz` : '' }}
+                    {{ module.lessons.length }} leçon{{ module.lessons.length > 1 ? 's' : '' }}{{ module.quizzes.length ? ' · ' + module.quizzes.length + ' quiz' : '' }}
                   </span>
                 </div>
                 <ul class="space-y-1 pl-8">

@@ -81,5 +81,5 @@ export default defineEventHandler(async (event) => {
   return {
     user,
     message: 'Compte créé. Un email d’activation vous a été envoyé. Vérifiez votre boîte mail avant de vous connecter.'
-  })
+  }
 })

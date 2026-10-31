@@ -1,6 +1,6 @@
 import { getRouterParam } from 'h3'
-import { prisma } from '../../../utils/prisma'
-import { requireRole } from '../../../utils/auth'
+import { prisma } from '../../utils/prisma'
+import { requireRole } from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()

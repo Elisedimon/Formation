@@ -1,7 +1,7 @@
 import { getRouterParam } from 'h3'
-import { prisma } from '../../../utils/prisma'
-import { requireAuth } from '../../../utils/auth'
-import { completeEnrollmentIfReady } from '../../../utils/learning'
+import { prisma } from '../../../../utils/prisma'
+import { requireAuth } from '../../../../utils/auth'
+import { completeEnrollmentIfReady } from '../../../../utils/learning'
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()

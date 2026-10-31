@@ -1,6 +1,6 @@
 import { getRouterParam, readBody } from 'h3'
-import { prisma } from '../../../utils/prisma'
-import { requireAuth } from '../../../utils/auth'
+import { prisma } from '../../../../utils/prisma'
+import { requireAuth } from '../../../../utils/auth'
 
 interface QuizAttemptBody {
   answers: Record<string, number> // questionId -> selected option index
