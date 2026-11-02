@@ -21,12 +21,16 @@ export default defineEventHandler(async (event) => {
 
   const user = await prisma.user.findUnique({ where: { email } })
 
+  console.log('[Login] email:', email, '| user found:', !!user, '| isActive:', user?.isActive)
+
   // Constant-time style: always run verify even if user not found
   const valid = user
     ? await verifyPassword(password, user.passwordHash)
     : false
 
-  if (!user || !valid || !user.isActive) {
+  console.log('[Login] password valid:', valid)
+
+  if (!user || !valid) {
     throw createError({
       statusCode: 401,
       statusMessage: 'Email ou mot de passe incorrect'

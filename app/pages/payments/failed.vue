@@ -7,7 +7,7 @@ const verificationPending = computed(() => status.value === 'verification' || st
 </script>
 
 <template>
-  <div class="pt-28 pb-20 min-h-[75vh] flex items-center bg-slate-50">
+  <div class="pb-20 min-h-[75vh] flex items-center bg-slate-50">
     <div class="max-w-md mx-auto px-4 text-center">
       <div class="w-16 h-16 rounded-full border flex items-center justify-center mx-auto mb-6" :class="verificationPending ? 'bg-amber-50 border-amber-100' : 'bg-red-50 border-red-100'">
         <svg v-if="verificationPending" xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">

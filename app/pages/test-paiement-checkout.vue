@@ -12,7 +12,7 @@ const description = 'Test paiement AST-Academy'
 
 async function initCheckout() {
   if (!publicKey || !publicKey.startsWith('pk_')) {
-    error.value = 'Clé publique FedaPay manquante (FEDAPAY_PUBLIC_KEY)'
+    error.value = 'Clé publique FedaPay manquante (NUXT_PUBLIC_FEDAPAY_PUBLIC_KEY)'
     return
   }
   paying.value = true
@@ -20,6 +20,7 @@ async function initCheckout() {
   result.value = null
 
   try {
+    // Charge Checkout.js si absent
     await new Promise<void>((resolve, reject) => {
       if ((window as any).FedaPay) return resolve()
       const script = document.createElement('script')
@@ -54,7 +55,7 @@ async function initCheckout() {
 </script>
 
 <template>
-  <div class="pt-20 pb-20 bg-slate-50 min-h-screen">
+  <div class="pb-20 bg-slate-50 min-h-screen">
     <div class="max-w-md mx-auto px-4 sm:px-6 lg:px-8">
       <div class="card overflow-hidden shadow-soft">
         <div class="p-6 sm:p-8 text-center">
@@ -64,7 +65,7 @@ async function initCheckout() {
           <button
             id="pay-btn"
             :disabled="paying || !publicKey?.startsWith('pk_')"
-            class="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed"
+            class="btn-primary w-full py-3 disabled:opacity-50"
           >
             {{ paying ? 'Initialisation…' : 'Payer 1 000 FCFA' }}
           </button>
@@ -73,12 +74,12 @@ async function initCheckout() {
             {{ error }}
           </div>
 
-          <div v-if="result" class="mt-4 p-3 rounded-md bg-emerald-50 text-emerald-700 text-sm border border-emerald-100">
+          <div v-if="result" class="mt-4 p-3 rounded-md bg-brand-50 text-brand-700 text-sm border border-brand-100">
             {{ result }}
           </div>
 
           <p class="mt-6 text-xs text-slate-400">
-            Numéros de test Mobile Money (sandbox) : succès 64000001 / 66000001, échec : tout autre numéro.
+            Sandbox Mobile Money : succès 64000001 / 66000001, échec : autre numéro.
           </p>
         </div>
       </div>

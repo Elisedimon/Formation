@@ -27,11 +27,11 @@ const paths = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 pb-20 pt-28">
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-slate-50 pb-20">
+    <div class="mx-auto max-w-[1536px] px-4 sm:px-6 lg:px-8">
       <div class="mb-12 max-w-2xl">
         <span class="badge mb-5">APPRENDRE AVEC UN CAP</span>
-        <h1 class="section-title mb-4">Choisissez votre <span class="text-emerald-600">parcours</span></h1>
+        <h1 class="section-title mb-4">Choisissez votre <span class="text-brand-600">parcours</span></h1>
         <p class="section-subtitle">Explorez les métiers du numérique et trouvez une formation qui correspond à votre prochaine étape.</p>
       </div>
       <div class="grid gap-6 lg:grid-cols-3">
@@ -45,13 +45,13 @@ const paths = [
             <h2 class="mb-2 text-xl font-bold">{{ path.title }}</h2>
             <p class="min-h-[72px] leading-relaxed text-slate-600">{{ path.summary }}</p>
             <div class="my-5 flex flex-wrap gap-2">
-              <span v-for="tag in path.tags" :key="tag" class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-800">{{ tag }}</span>
+              <span v-for="tag in path.tags" :key="tag" class="rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-800">{{ tag }}</span>
             </div>
-            <NuxtLink to="/formations" class="inline-flex items-center gap-2 font-semibold text-emerald-700 hover:text-emerald-900">Explorer les formations <span aria-hidden="true">→</span></NuxtLink>
+            <NuxtLink to="/formations" class="inline-flex items-center gap-2 font-semibold text-brand-700 hover:text-brand-900">Explorer les formations <span aria-hidden="true">→</span></NuxtLink>
           </div>
         </article>
       </div>
-      <div class="mt-10 rounded-2xl border border-emerald-100 bg-white p-6 sm:flex sm:items-center sm:justify-between sm:p-8">
+      <div class="mt-10 rounded-2xl border border-brand-100 bg-white p-6 sm:flex sm:items-center sm:justify-between sm:p-8">
         <div><h2 class="text-lg font-bold">Vous hésitez sur la direction à prendre ?</h2><p class="mt-1 text-slate-600">Parlons de vos objectifs et trouvons ensemble votre point de départ.</p></div>
         <NuxtLink to="/contact" class="btn-primary mt-5 !rounded-full sm:mt-0">Nous contacter</NuxtLink>
       </div>

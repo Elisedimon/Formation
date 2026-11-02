@@ -41,10 +41,10 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="pt-28 pb-20 min-h-[75vh] flex items-center bg-slate-50">
+  <div class="pb-20 min-h-[75vh] flex items-center bg-slate-50">
     <div class="max-w-md w-full mx-auto px-4">
       <div class="text-center mb-8">
-        <div class="w-12 h-12 rounded-xl bg-emerald-600 flex items-center justify-center font-bold text-white text-xl mx-auto mb-4 shadow-md shadow-emerald-600/30">
+        <div class="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center font-bold text-white text-xl mx-auto mb-4 shadow-md shadow-brand/25">
           !
         </div>
         <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Nouveau mot de passe</h1>
@@ -97,7 +97,7 @@ async function onSubmit() {
       </form>
 
       <div v-else class="card p-6 sm:p-8 text-center">
-        <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center font-bold text-emerald-600 text-xl mx-auto mb-4">
+        <div class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand-600 text-xl mx-auto mb-4">
           ✓
         </div>
         <h2 class="text-xl font-bold text-slate-900 mb-2">Mot de passe réinitialisé</h2>
@@ -111,7 +111,7 @@ async function onSubmit() {
 
       <p v-if="!token" class="text-center text-sm text-slate-500 mt-6">
         Token de réinitialisation manquant.
-        <NuxtLink to="/auth/forgot-password" class="text-emerald-600 font-semibold hover:underline">
+          <NuxtLink to="/auth/forgot-password" class="text-brand-600 font-semibold hover:underline">
           Demander un nouveau lien
         </NuxtLink>
       </p>

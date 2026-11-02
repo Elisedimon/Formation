@@ -18,11 +18,11 @@ const courses = computed(() => allCourses.value.filter((course) => {
 </script>
 
 <template>
-  <div class="pt-28 pb-20 bg-slate-50 min-h-screen">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="pb-20 bg-slate-50 min-h-screen">
+    <div class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-14">
         <h1 class="section-title mb-4">
-          Nos <span class="text-emerald-600">formations</span>
+          Nos <span class="text-brand-600">formations</span>
         </h1>
         <p class="section-subtitle mx-auto">
           Choisissez le parcours qui correspond à vos objectifs et progressez à votre rythme.
@@ -36,12 +36,12 @@ const courses = computed(() => allCourses.value.filter((course) => {
           <input v-model="search" type="search" class="form-input !pl-12" placeholder="Rechercher une formation…">
         </label>
         <div class="flex flex-wrap gap-2" aria-label="Filtrer par domaine">
-          <button v-for="category in categories" :key="category" type="button" class="rounded-full border px-4 py-2 text-sm font-medium transition" :class="selectedCategory === category ? 'border-emerald-700 bg-emerald-700 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-emerald-300'" @click="selectedCategory = category">{{ category }}</button>
+          <button v-for="category in categories" :key="category" type="button" class="rounded-full border px-4 py-2 text-sm font-medium transition" :class="selectedCategory === category ? 'border-brand-700 bg-brand-700 text-white' : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300'" @click="selectedCategory = category">{{ category }}</button>
         </div>
       </div>
 
       <div v-if="pending" class="text-center text-slate-400 py-16">
-        <div class="inline-block w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-3" />
+        <div class="inline-block w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin mb-3" />
         <p>Chargement des formations...</p>
       </div>
 
@@ -61,7 +61,7 @@ const courses = computed(() => allCourses.value.filter((course) => {
       <div v-else class="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center">
         <h2 class="text-xl font-bold text-slate-900">Aucune formation ne correspond à votre recherche</h2>
         <p class="mt-2 text-slate-500">Essayez un autre terme ou choisissez un autre domaine.</p>
-        <button type="button" class="mt-5 font-semibold text-emerald-700 hover:underline" @click="search = ''; selectedCategory = 'Toutes'">Effacer les filtres</button>
+        <button type="button" class="mt-5 font-semibold text-brand-700 hover:underline" @click="search = ''; selectedCategory = 'Toutes'">Effacer les filtres</button>
       </div>
     </div>
   </div>

@@ -8,6 +8,18 @@ export default defineEventHandler(async (event) => {
     where: { instructorId: instructor.userId }, orderBy: { updatedAt: 'desc' },
     select: { id: true, title: true, slug: true, category: true, duration: true, level: true, price: true, isPublished: true, _count: { select: { enrollments: true } } }
   })
-  return { courses, stats: { courses: courses.length, published: courses.filter(course => course.isPublished).length, learners: courses.reduce((total, course) => total + course._count.enrollments, 0) } }
+  const courseIds = courses.map(c => c.id)
+  const revenueAgg = await prisma.payment.aggregate({
+    where: { courseId: { in: courseIds }, status: 'APPROVED' },
+    _sum: { amount: true }
+  })
+  return {
+    courses,
+    stats: {
+      courses: courses.length,
+      published: courses.filter(course => course.isPublished).length,
+      learners: courses.reduce((total, course) => total + course._count.enrollments, 0),
+      revenue: revenueAgg._sum.amount || 0
+    }
+  }
 })
-

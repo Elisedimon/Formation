@@ -33,7 +33,7 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="pt-28 pb-20 min-h-[75vh] flex items-center bg-slate-50">
+  <div class="pb-20 min-h-[75vh] flex items-center bg-slate-50">
     <div class="max-w-md w-full mx-auto px-4">
       <div class="text-center mb-8">
         <div class="w-12 h-12 rounded-xl bg-amber-600 flex items-center justify-center font-bold text-white text-xl mx-auto mb-4 shadow-md shadow-amber-600/30">
@@ -75,7 +75,7 @@ async function onSubmit() {
         </div>
 
         <div v-else class="text-center">
-          <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center font-bold text-emerald-600 text-xl mx-auto mb-4">
+          <div class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand-600 text-xl mx-auto mb-4">
             ✓
           </div>
           <h2 class="text-xl font-bold text-slate-900 mb-2">Email envoyé</h2>
@@ -89,7 +89,7 @@ async function onSubmit() {
 
         <p class="text-center text-sm text-slate-500 mt-6">
           Vous vous souvenez de votre mot de passe ?
-          <NuxtLink to="/auth/login" class="text-emerald-600 font-semibold hover:underline">
+          <NuxtLink to="/auth/login" class="text-brand-600 font-semibold hover:underline">
             Se connecter
           </NuxtLink>
         </p>

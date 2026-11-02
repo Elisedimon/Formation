@@ -1,6 +1,7 @@
 import { prisma } from '../../utils/prisma'
 import { requireAuth } from '../../utils/auth'
 import { createFedaPayTransaction } from '../../utils/fedapay'
+import { ensurePlatformSettings, getSettingValue } from '../../utils/platformSettings'
 
 interface CreatePaymentBody {
   courseId?: string
@@ -9,6 +10,14 @@ interface CreatePaymentBody {
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const payload = await requireAuth(event, config.jwtSecret)
+
+  await ensurePlatformSettings()
+  if ((await getSettingValue('features.payments')) !== 'true') {
+    throw createError({ statusCode: 503, statusMessage: 'Les paiements sont désactivés.' })
+  }
+  if ((await getSettingValue('features.enrollments')) !== 'true') {
+    throw createError({ statusCode: 503, statusMessage: 'Les inscriptions sont désactivées.' })
+  }
 
   const body = await readBody<CreatePaymentBody>(event)
   const courseId = body.courseId?.trim()

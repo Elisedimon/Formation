@@ -30,11 +30,11 @@ const sections = [
 </script>
 
 <template>
-  <main class="min-h-screen bg-slate-50 px-4 pb-20 pt-28 sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-slate-50 px-4 pb-20 sm:px-6 lg:px-8">
     <div class="mx-auto max-w-4xl">
       <header class="mb-8">
         <span class="badge mb-4">CADRE D’UTILISATION</span>
-        <h1 class="section-title">Conditions <span class="text-emerald-700">d’utilisation</span></h1>
+        <h1 class="section-title">Conditions <span class="text-brand-700">d’utilisation</span></h1>
         <p class="mt-3 max-w-2xl leading-relaxed text-slate-600">Les règles essentielles pour utiliser AST-Academy, gérer votre compte et vous inscrire à une formation.</p>
       </header>
 
@@ -45,7 +45,7 @@ const sections = [
         </section>
       </div>
 
-      <p class="mt-5 text-sm text-slate-500">Ces conditions ne remplacent pas les informations détaillées qui doivent accompagner chaque formation ou offre. <NuxtLink to="/contact" class="font-semibold text-emerald-700 underline underline-offset-4">Contacter AST-Academy</NuxtLink>.</p>
+      <p class="mt-5 text-sm text-slate-500">Ces conditions ne remplacent pas les informations détaillées qui doivent accompagner chaque formation ou offre.         <NuxtLink to="/contact" class="font-semibold text-brand-700 underline underline-offset-4">Contacter AST-Academy</NuxtLink>.</p>
     </div>
-  </main>
+  </div>
 </template>

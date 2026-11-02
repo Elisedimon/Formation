@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ middleware: ['auth'] })
+
 const route = useRoute()
 const { isLoggedIn, fetchMe, user } = useAuth()
 
@@ -141,12 +143,12 @@ async function goToLesson(lesson: any) {
 }
 
 async function next() {
-  const nl = nextLesson.value
+  const nl = nextLesson
   if (nl) await goToLesson(nl)
 }
 
 async function prev() {
-  const pl = prevLesson.value
+  const pl = prevLesson
   if (pl) await goToLesson(pl)
 }
 
@@ -155,20 +157,21 @@ onMounted(() => {
 })
 
 const videoReady = ref(false)
+const videoEl = ref<HTMLVideoElement | null>(null)
 </script>
 
 <template>
   <div class="min-h-screen bg-slate-50 pb-24">
     <!-- Barre de progression globale -->
     <div class="fixed top-0 left-0 right-0 h-1 bg-slate-200 z-40">
-      <div
-        class="h-1 bg-emerald-600 transition-all duration-300"
-        :style="{ width: lessonPercent.value + '%' }"
-      ></div>
+        <div
+          class="h-1 bg-brand-600 transition-all duration-300"
+          :style="{ width: lessonPercent.value + '%' }"
+        ></div>
     </div>
 
     <div v-if="pending" class="flex items-center justify-center h-[60vh]">
-      <div class="inline-block w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div class="inline-block w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
     </div>
 
     <div v-else-if="error || !course" class="flex items-center justify-center h-[60vh] text-center px-4">
@@ -192,19 +195,19 @@ const videoReady = ref(false)
           <div class="text-xs font-bold text-slate-400 uppercase tracking-wider">Progression</div>
           <div class="flex items-center gap-2 mt-1">
             <span class="text-sm font-bold text-slate-900">{{ percent.value }}%</span>
-            <button
-              type="button"
-              class="text-xs text-emerald-600 font-medium hover:underline"
-              @click="refresh"
-            >
+              <button
+                type="button"
+                class="text-xs text-brand-600 font-medium hover:underline"
+                @click="refresh"
+              >
               Actualiser
             </button>
           </div>
           <div class="w-full bg-slate-200 rounded-full h-2 mt-2">
-            <div
-              class="h-2 bg-emerald-600 rounded-full transition-all duration-500"
-              :style="{ width: percent.value + '%' }"
-            ></div>
+              <div
+                class="h-2 bg-brand-600 rounded-full transition-all duration-500"
+                :style="{ width: percent.value + '%' }"
+              ></div>
           </div>
         </div>
       </div>
@@ -234,8 +237,8 @@ const videoReady = ref(false)
                 </svg>
                 <p>{{ currentLesson?.title || 'Aucune vidéo disponible' }}</p>
               </div>
-              <div v-if="isLessonCompleted" class="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-900/90 backdrop-blur text-emerald-200 text-xs font-bold border border-emerald-500/30">
-                <span class="w-2 h-2 rounded-full bg-emerald-400" />
+              <div v-if="isLessonCompleted" class="absolute top-4 left-4 z-10 flex items-center gap-2 px-3 py-1 rounded-full bg-brand-900/90 backdrop-blur text-brand-200 text-xs font-bold border border-brand-500/30">
+                <span class="w-2 h-2 rounded-full bg-brand-400" />
                 Terminé
               </div>
             </div>
@@ -245,8 +248,7 @@ const videoReady = ref(false)
                 <div>
                   <h2 class="text-xl font-bold text-slate-900 mb-1">{{ currentLesson?.title }}</h2>
                   <p class="text-sm text-slate-500">
-                    Leçon {{ currentGlobalPosition.value }} / {{ totalLessons.value }}
-                    {{ currentLesson.durationMinutes ? ` · {{ currentLesson.durationMinutes }} min` : '' }}
+                     Leçon {{ currentGlobalPosition.value }} / {{ totalLessons.value }}
                   </p>
                 </div>
                 <button
@@ -255,12 +257,12 @@ const videoReady = ref(false)
                   class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition"
                   :class="
                     isLessonCompleted
-                      ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                      : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
+                       ? 'bg-brand-50 text-brand-700 border border-brand-100'
+                       : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
                   "
                   @click="markLessonComplete"
                 >
-                  <svg v-if="isLessonCompleted" class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <svg v-if="isLessonCompleted" class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                   </svg>
                   <span v-if="markingComplete">Enregistrement…</span>
@@ -281,10 +283,10 @@ const videoReady = ref(false)
               <div class="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">
                 <button
                   type="button"
-                  :disabled="!prevLesson.value"
+                  :disabled="!prevLesson"
                   class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition"
                   :class="
-                    !prevLesson.value
+                    !prevLesson
                       ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                       : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'
                   "
@@ -297,10 +299,10 @@ const videoReady = ref(false)
                 </button>
                 <button
                   type="button"
-                  :disabled="!nextLesson.value || isCompleted"
+                  :disabled="!nextLesson || isCompleted"
                   class="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition"
                   :class="
-                    !nextLesson.value || isCompleted
+                    !nextLesson || isCompleted
                       ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                       : 'btn-primary'
                   "
@@ -316,9 +318,9 @@ const videoReady = ref(false)
           </div>
 
           <!-- Certificat si terminé -->
-          <div v-if="isCompleted && enrollment.certificate" class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6">
+          <div v-if="isCompleted && enrollment.certificate" class="rounded-2xl border border-brand-200 bg-brand-50 p-6">
             <div class="flex items-start gap-4">
-              <div class="w-10 h-10 rounded-full bg-emerald-100 flex-shrink-0 flex items-center justify-center text-emerald-700 font-bold">
+              <div class="w-10 h-10 rounded-full bg-brand-100 flex-shrink-0 flex items-center justify-center text-brand-700 font-bold">
                 ✦
               </div>
               <div>
@@ -330,9 +332,8 @@ const videoReady = ref(false)
                   Voir et télécharger mon certificat
                 </NuxtLink>
               </div>
-            </div>
-          </div>
-        </div>
+                 </div>
+               </div>
 
         <!-- Barre latérale programme (4/12) -->
         <div class="lg:col-span-4 space-y-6">
@@ -345,9 +346,9 @@ const videoReady = ref(false)
                     type="button"
                     class="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-left transition"
                     :class="
-                      currentModuleIndex.value === mIdx
-                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                        : 'bg-slate-50 text-slate-600 border border-transparent hover:bg-slate-100'
+                       currentModuleIndex.value === mIdx
+                         ? 'bg-brand-50 text-brand-700 border border-brand-100'
+                         : 'bg-slate-50 text-slate-600 border border-transparent hover:bg-slate-100'
                     "
                     @click="currentModuleIndex.value = mIdx; currentLessonIndex.value = 0"
                   >
@@ -355,7 +356,7 @@ const videoReady = ref(false)
                       {{ mIdx + 1 }}
                     </span>
                     <span class="font-semibold text-slate-800 truncate">{{ module.title }}</span>
-                    <span class="ml-auto text-xs font-semibold" :class="currentModuleIndex.value === mIdx ? 'text-emerald-600' : 'text-slate-400'">
+                    <span class="ml-auto text-xs font-semibold" :class="currentModuleIndex.value === mIdx ? 'text-brand-600' : 'text-slate-400'">
                       {{ module.lessons.filter(l => l.progress?.[0]?.completedAt).length }} / {{ module.lessons.length }}
                     </span>
                   </button>
@@ -369,8 +370,8 @@ const videoReady = ref(false)
                     class="flex items-center gap-3 px-3 py-2 rounded-lg text-left transition cursor-pointer group"
                     :class="
                       currentLesson.value?.id === lesson.id
-                        ? 'bg-emerald-50 border border-emerald-100'
-                        : 'bg-transparent hover:bg-slate-50'
+                         ? 'bg-brand-50 border border-brand-100'
+                         : 'bg-transparent hover:bg-slate-50'
                     "
                     @click="goToLesson(lesson)"
                   >
@@ -378,15 +379,15 @@ const videoReady = ref(false)
                       class="w-2.5 h-2.5 rounded-full transition-colors"
                       :class="
                         lesson.progress?.[0]?.completedAt
-                          ? 'bg-emerald-600'
+                          ? 'bg-brand-500'
                           : 'bg-slate-300'
                       "
                     />
-                    <span class="text-sm text-slate-700 group-hover:text-emerald-600 truncate">{{ lesson.title }}</span>
+                    <span class="text-sm text-slate-700 group-hover:text-brand-600 truncate">{{ lesson.title }}</span>
                     <span class="ml-auto text-[10px] font-bold" :class="
                       lesson.progress?.[0]?.completedAt
-                        ? 'text-emerald-600 bg-emerald-50/50'
-                        : 'text-slate-400 bg-slate-100'
+                     ? 'text-brand-600 bg-brand-50/50'
+                     : 'text-slate-400 bg-slate-100'
                     " px-1 py-0.5 rounded>
                       {{ lesson.progress?.[0]?.completedAt ? '✓' : '○' }}
                     </span>
@@ -399,7 +400,7 @@ const videoReady = ref(false)
                     <span class="text-sm text-amber-700 font-semibold truncate">{{ quiz.title }}</span>
                     <span class="ml-auto text-[10px] font-bold" :class="
                       quiz.lastAttempt?.passed
-                        ? 'text-emerald-600 bg-emerald-50/50'
+                         ? 'text-brand-600 bg-brand-50/50'
                         : quiz.lastAttempt
                         ? 'text-red-600 bg-red-50/50'
                         : 'text-slate-400 bg-slate-100'
@@ -427,7 +428,7 @@ const videoReady = ref(false)
               </li>
               <li class="flex justify-between">
                 <span>Statut</span>
-                <span class="font-semibold" :class="isCompleted ? 'text-emerald-600' : 'text-slate-600'">
+                 <span class="font-semibold" :class="isCompleted ? 'text-brand-600' : 'text-slate-600'">
                   {{ isCompleted ? 'Terminée' : 'En cours' }}
                 </span>
               </li>

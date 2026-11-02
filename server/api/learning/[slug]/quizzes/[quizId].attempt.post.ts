@@ -1,6 +1,7 @@
 import { getRouterParam, readBody } from 'h3'
 import { prisma } from '../../../../utils/prisma'
 import { requireAuth } from '../../../../utils/auth'
+import { ensurePlatformSettings, getSettingValue } from '../../../../utils/platformSettings'
 
 interface QuizAttemptBody {
   answers: Record<string, number> // questionId -> selected option index
@@ -10,6 +11,11 @@ export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
   const user = await requireAuth(event, config.jwtSecret)
 
+  await ensurePlatformSettings()
+  if ((await getSettingValue('features.quizzes')) !== 'true') {
+    throw createError({ statusCode: 503, statusMessage: 'Les quiz sont désactivés.' })
+  }
+
   const slug = getRouterParam(event, 'slug')
   const quizId = getRouterParam(event, 'quizId')
 
@@ -18,7 +24,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const body = await readBody<QuizAttemptBody>(event)
-  const answers = body.answers || {}
+  const answers = body?.answers && typeof body.answers === 'object' ? body.answers : {}
 
   // Récupérer le cours par slug
   const course = await prisma.course.findUnique({
@@ -66,6 +72,18 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 403, statusMessage: 'Ce quiz n’appartient pas à cette formation' })
   }
 
+  // Vérifier le nombre de tentatives (max 3 par défaut) AVANT de calculer/enregistrer
+  const maxAttempts = 3
+  const existingAttempts = await prisma.quizAttempt.count({
+    where: { enrollmentId: enrollment.id, quizId: quiz.id }
+  })
+  if (existingAttempts >= maxAttempts) {
+    throw createError({
+      statusCode: 403,
+      statusMessage: `Nombre maximum de tentatives (${maxAttempts}) atteint pour ce quiz`
+    })
+  }
+
   // Calculer le score
   const totalQuestions = quiz.questions.length
   let correctCount = 0
@@ -77,18 +95,6 @@ export default defineEventHandler(async (event) => {
   }
   const score = totalQuestions > 0 ? Math.round((correctCount / totalQuestions) * 100) : 0
   const passed = score >= quiz.passingScore
-
-  // Vérifier le nombre de tentatives (max 3 par défaut)
-  const maxAttempts = 3
-  const existingAttempts = await prisma.quizAttempt.count({
-    where: { enrollmentId: enrollment.id, quizId: quiz.id }
-  })
-  if (existingAttempts >= maxAttempts) {
-    throw createError({
-      statusCode: 403,
-      statusMessage: `Nombre maximum de tentatives (${maxAttempts}) atteint pour ce quiz`
-    })
-  }
 
   // Enregistrer la tentative
   const attempt = await prisma.quizAttempt.create({

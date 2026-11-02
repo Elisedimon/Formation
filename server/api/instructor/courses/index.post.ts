@@ -10,6 +10,8 @@ export default defineEventHandler(async (event) => {
   const slug = String(body.slug || '').trim().toLowerCase()
   const category = String(body.category || '').trim()
   const price = Number(body.price)
+  const icon = typeof body.icon === 'string' ? body.icon.trim() || null : null
+  const image = typeof body.image === 'string' ? body.image.trim() || null : null
   if (title.length < 3 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || !category || !Number.isInteger(price) || price < 0) {
     throw createError({ statusCode: 400, statusMessage: 'Titre, slug, catégorie ou prix invalide.' })
   }
@@ -19,6 +21,8 @@ export default defineEventHandler(async (event) => {
       description: String(body.description || '').trim(),
       duration: String(body.duration || '').trim() || null,
       level: String(body.level || '').trim() || null,
+      icon,
+      image,
       isPublished: false
     } satisfies Prisma.CourseCreateInput })
     return { course }
@@ -29,4 +33,3 @@ export default defineEventHandler(async (event) => {
     throw error
   }
 })
-

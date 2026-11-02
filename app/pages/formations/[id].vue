@@ -36,6 +36,21 @@ const formatPrice = (price: number) =>
 
 const stars = (rating: number) => Array.from({ length: 5 }, (_, i) => i < Math.round(rating))
 
+async function toggleLike(review: any) {
+  if (!isLoggedIn.value) {
+    await fetchMe()
+    if (!isLoggedIn.value) return
+  }
+  try {
+    const res = await $fetch<{ liked: boolean; likeCount: number }>(
+      `/api/courses/${courseId.value}/reviews/${review.id}/like`,
+      { method: 'POST' }
+    )
+    review.likedByMe = res.liked
+    review.likeCount = res.likeCount
+  } catch {}
+}
+
 const paying = ref(false)
 const payError = ref('')
 const enrolled = ref(false)
@@ -102,9 +117,9 @@ const relatedCourses = computed(() => {
 </script>
 
 <template>
-  <div class="pt-20 pb-20 bg-slate-50 min-h-screen">
+  <div class="pb-20 bg-slate-50 min-h-screen">
     <div v-if="pending" class="flex items-center justify-center h-[60vh]">
-      <div class="inline-block w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div class="inline-block w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
     </div>
 
     <div v-else-if="error || !course" class="flex items-center justify-center h-[60vh] text-center px-4">
@@ -114,7 +129,7 @@ const relatedCourses = computed(() => {
       </div>
     </div>
 
-    <div v-else class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div v-else class="max-w-[1536px] mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Header avec image -->
       <div class="relative aspect-[16/9] min-h-[400px] bg-slate-200 overflow-hidden rounded-3xl shadow-xl mb-8">
         <img :src="courseImage" :alt="`Illustration de ${course.title}`" class="absolute inset-0 h-full w-full object-cover" loading="lazy">
@@ -125,7 +140,7 @@ const relatedCourses = computed(() => {
           </span>
         </div>
         <div class="absolute top-6 right-6">
-          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-600/90 backdrop-blur-sm px-2.5 py-0.5 text-xs font-bold text-white shadow-lg">
+          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-brand-600/90 backdrop-blur-sm px-2.5 py-0.5 text-xs font-bold text-white shadow-lg">
             {{ formatPrice(course.price) }}
           </span>
         </div>
@@ -145,7 +160,7 @@ const relatedCourses = computed(() => {
 
           <div class="flex items-center gap-4 mb-6">
             <div class="flex items-center gap-1.5">
-              <span class="text-[11px] text-emerald-600 font-bold">★</span>
+              <span class="text-[11px] text-brand-600 font-bold">★</span>
               <span class="text-lg font-bold text-slate-900">{{ averageRating.toFixed(1) }}</span>
               <span class="text-sm text-slate-500">({{ reviewCount }} avis)</span>
             </div>
@@ -159,7 +174,7 @@ const relatedCourses = computed(() => {
 
           <!-- Infos formateur -->
           <div class="flex items-start gap-4 p-4 rounded-2xl bg-white border border-slate-200 shadow-sm">
-            <div class="w-10 h-10 rounded-full bg-emerald-50 flex-shrink-0 flex items-center justify-center text-emerald-700 font-bold">
+            <div class="w-10 h-10 rounded-full bg-brand-50 flex-shrink-0 flex items-center justify-center text-brand-700 font-bold">
               {{ (course.instructor?.firstName?.[0] || course.instructor?.email?.[0] || 'F').toUpperCase() }}
             </div>
             <div>
@@ -171,26 +186,26 @@ const relatedCourses = computed(() => {
           <!-- Ce que vous allez apprendre -->
           <div class="space-y-4">
             <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
               </svg>
               Ce que vous allez apprendre
             </h3>
             <ul class="space-y-3 text-slate-600">
               <li class="flex items-start gap-3">
-                <span class="text-emerald-600 mt-0.5">✓</span>
+                <span class="text-brand-600 mt-0.5">✓</span>
                 <span>Maîtriser les fondamentaux de {{ course.title.toLowerCase() }}</span>
               </li>
               <li class="flex items-start gap-3">
-                <span class="text-emerald-600 mt-0.5">✓</span>
+                <span class="text-brand-600 mt-0.5">✓</span>
                 <span>Réaliser des projets concrets pour votre portfolio</span>
               </li>
               <li class="flex items-start gap-3">
-                <span class="text-emerald-600 mt-0.5">✓</span>
+                <span class="text-brand-600 mt-0.5">✓</span>
                 <span>Obtenir un certificat vérifiable AST-Academy</span>
               </li>
               <li class="flex items-start gap-3">
-                <span class="text-emerald-600 mt-0.5">✓</span>
+                <span class="text-brand-600 mt-0.5">✓</span>
                 <span>Accéder à vie aux contenus de la formation</span>
               </li>
             </ul>
@@ -199,7 +214,7 @@ const relatedCourses = computed(() => {
           <!-- Prérequis -->
           <div class="space-y-4">
             <h3 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               Prérequis
@@ -223,11 +238,11 @@ const relatedCourses = computed(() => {
 
         <!-- Colonne droite : Achat + Programme -->
         <div class="lg:col-span-1 space-y-6">
-          <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm sticky top-24">
+          <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
             <div class="mb-6">
               <p class="text-sm text-slate-500 uppercase tracking-wider font-semibold">Prix</p>
               <div class="flex items-baseline gap-1 mt-1">
-                <span class="text-3xl font-bold text-emerald-600">{{ formatPrice(course.price) }}</span>
+                <span class="text-3xl font-bold text-brand-600">{{ formatPrice(course.price) }}</span>
                 <span class="text-sm text-slate-500">/ formation</span>
               </div>
             </div>
@@ -247,7 +262,7 @@ const relatedCourses = computed(() => {
                 class="btn-primary w-full"
                 @click="navigateTo({ path: '/auth/login', query: { redirect: `/formations/${course.slug}` } })"
               >
-                Se connecter pour acheter
+                 Se connecter pour payer
               </button>
               <button
                 v-else
@@ -256,7 +271,7 @@ const relatedCourses = computed(() => {
                 :disabled="paying"
                 @click="startPayment"
               >
-                {{ paying ? 'Paiement en cours…' : "S'inscrire et payer" }}
+                 {{ paying ? 'Paiement en cours…' : 'Payer' }}
               </button>
               <p v-if="!isLoggedIn && !enrolled" class="text-xs text-slate-400 text-center mt-3">
                 Connexion requise pour s’inscrire
@@ -268,19 +283,19 @@ const relatedCourses = computed(() => {
               <p class="text-xs text-slate-500 uppercase tracking-wider font-semibold mb-3">Ce qui est inclus</p>
               <ul class="space-y-2 text-sm text-slate-600">
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-600 mt-0.5">✓</span>
+                  <span class="text-brand-600 mt-0.5">✓</span>
                   <span>Accès illimité aux vidéos</span>
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-600 mt-0.5">✓</span>
+                  <span class="text-brand-600 mt-0.5">✓</span>
                   <span>Quiz et exercices pratiques</span>
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-600 mt-0.5">✓</span>
+                  <span class="text-brand-600 mt-0.5">✓</span>
                   <span>Certificat de completion</span>
                 </li>
                 <li class="flex items-start gap-2">
-                  <span class="text-emerald-600 mt-0.5">✓</span>
+                  <span class="text-brand-600 mt-0.5">✓</span>
                   <span>Paiement sécurisé via FedaPay</span>
                 </li>
               </ul>
@@ -303,7 +318,7 @@ const relatedCourses = computed(() => {
                     {{ mIdx + 1 }}
                   </span>
                   <h4 class="font-bold text-slate-800">{{ module.title }}</h4>
-                  <span class="ml-auto text-xs font-semibold text-emerald-600">
+                  <span class="ml-auto text-xs font-semibold text-brand-600">
                     {{ module.lessons.length }} leçon{{ module.lessons.length > 1 ? 's' : '' }}{{ module.quizzes.length ? ' · ' + module.quizzes.length + ' quiz' : '' }}
                   </span>
                 </div>
@@ -332,13 +347,21 @@ const relatedCourses = computed(() => {
               <div v-for="(review, idx) in reviews" :key="idx" class="pt-4 border-t border-slate-50/50 first:border-0">
                 <div class="flex items-center gap-3 mb-1">
                   <span class="text-sm font-semibold text-slate-900 truncate">
-                    {{ [review.user.firstName, review.user.lastName].filter(Boolean).join(' ') || review.user.email }}
+                    {{ [review.user?.firstName, review.user?.lastName].filter(Boolean).join(' ') || review.user?.email || 'Apprenant' }}
                   </span>
                   <div class="flex gap-0.5">
                     <span v-for="s in stars(review.rating)" :key="s" class="text-[12px] text-amber-400">★</span>
                   </div>
                 </div>
                 <p v-if="review.comment" class="text-sm text-slate-600 leading-relaxed">{{ review.comment }}</p>
+                <button
+                  class="mt-2 inline-flex items-center gap-1 text-xs font-semibold"
+                  :class="review.likedByMe ? 'text-rose-600' : 'text-slate-500'"
+                  @click="toggleLike(review)"
+                >
+                  <span>{{ review.likedByMe ? '♥' : '♡' }}</span>
+                  <span>{{ review.likeCount || 0 }}</span>
+                </button>
               </div>
             </div>
           </div>

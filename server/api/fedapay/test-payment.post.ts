@@ -15,10 +15,19 @@ export default defineEventHandler(async (event) => {
   const secretKey = config.fedapaySecretKey as string
   const env = (config.fedapayEnv as string) || 'sandbox'
 
+  // 🔍 Log de diagnostic (à retirer en prod)
+  console.log(
+    '[FedaPay] secretKey prefix:',
+    secretKey ? secretKey.slice(0, 12) + '…' : 'UNDEFINED',
+    '| env:',
+    env
+  )
+
   if (!secretKey || !secretKey.startsWith('sk_')) {
     throw createError({
       statusCode: 500,
-      statusMessage: 'FEDAPAY_SECRET_KEY invalide ou manquante'
+      statusMessage:
+        'FEDAPAY_SECRET_KEY invalide ou manquante (vérifiez NUXT_FEDAPAY_SECRET_KEY dans .env)'
     })
   }
 
@@ -35,12 +44,15 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const appUrl = String(config.public.appUrl || 'http://localhost:3000').replace(/\/$/, '')
+  const appUrl = String(
+    config.public.appUrl || 'http://localhost:3000'
+  ).replace(/\/$/, '')
   const callbackUrl = body.callbackUrl || `${appUrl}/api/payments/callback`
 
   try {
     const transaction = await Transaction.create({
-      description: body.description || `Test paiement AST-Academy – ${amount} XOF`,
+      description:
+        body.description || `Test paiement AST-Academy – ${amount} XOF`,
       amount,
       currency: { iso: 'XOF' },
       callback_url: callbackUrl,
@@ -52,6 +64,8 @@ export default defineEventHandler(async (event) => {
     })
 
     let paymentUrl: string | undefined
+
+    // 1) Tentative via SDK
     try {
       if (typeof (transaction as any).generateToken === 'function') {
         const tokenResult = await (transaction as any).generateToken()
@@ -61,9 +75,10 @@ export default defineEventHandler(async (event) => {
           (typeof tokenResult === 'string' ? tokenResult : undefined)
       }
     } catch {
-      // fall through to REST
+      // on tombe sur l'appel REST ci-dessous
     }
 
+    // 2) Fallback REST
     if (!paymentUrl) {
       const res = await fetch(
         `https://${env === 'live' ? 'api' : 'sandbox-api'}.fedapay.com/v1/transactions/${transaction.id}/token`,

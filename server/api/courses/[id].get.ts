@@ -1,4 +1,4 @@
-import { getRouterParam } from 'h3'
+﻿import { getRouterParam } from 'h3'
 import { prisma } from '../../utils/prisma'
 
 export default defineEventHandler(async (event) => {
@@ -91,3 +91,4 @@ export default defineEventHandler(async (event) => {
     }
   }
 })
+

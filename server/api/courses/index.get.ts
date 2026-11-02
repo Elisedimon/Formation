@@ -1,4 +1,4 @@
-import { prisma } from '../../utils/prisma'
+﻿import { prisma } from '../../utils/prisma'
 
 export default defineEventHandler(async () => {
   const courses = await prisma.course.findMany({
@@ -18,3 +18,4 @@ export default defineEventHandler(async () => {
 
   return { courses }
 })
+

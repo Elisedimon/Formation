@@ -1,5 +1,6 @@
 import { prisma } from '../../utils/prisma'
 import { retrieveFedaPayTransaction } from '../../utils/fedapay'
+import { ensurePlatformSettings, getSettingValue } from '../../utils/platformSettings'
 
 /**
  * User is redirected here after completing (or cancelling) payment on FedaPay.
@@ -75,6 +76,10 @@ export default defineEventHandler(async (event) => {
 
   // Create enrollment on success
   if (finalStatus === 'APPROVED' && payment.courseId) {
+    await ensurePlatformSettings()
+    if ((await getSettingValue('features.enrollments')) !== 'true') {
+      return sendRedirect(event, `${appUrl}/payments/failed?reason=feature_disabled`)
+    }
     await prisma.enrollment.upsert({
       where: {
         userId_courseId: {

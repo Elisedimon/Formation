@@ -1,4 +1,6 @@
 <script setup lang="ts">
+definePageMeta({ middleware: ['auth'] })
+
 const route = useRoute()
 const { isLoggedIn, fetchMe, user } = useAuth()
 
@@ -80,7 +82,7 @@ const stars = (rating: number) => Array.from({ length: 5 }, (_, i) => i < rating
 <template>
   <div class="min-h-screen bg-slate-50 pb-24">
     <div v-if="pending" class="flex items-center justify-center h-[60vh]">
-      <div class="inline-block w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+      <div class="inline-block w-8 h-8 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
     </div>
 
     <div v-else-if="error || !quiz" class="flex items-center justify-center h-[60vh] text-center px-4">
@@ -96,7 +98,7 @@ const stars = (rating: number) => Array.from({ length: 5 }, (_, i) => i < rating
           class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6"
           :class="
             attemptResult.passed
-              ? 'bg-emerald-100 text-emerald-600 border border-emerald-200'
+              ? 'bg-brand-100 text-brand-600 border border-brand-200'
               : 'bg-amber-100 text-amber-600 border border-amber-200'
           "
         >
@@ -106,7 +108,7 @@ const stars = (rating: number) => Array.from({ length: 5 }, (_, i) => i < rating
           {{ attemptResult.passed ? 'Quiz réussi !' : 'Quiz non réussi' }}
         </h1>
         <div class="text-4xl font-bold mb-2"
-          :class="attemptResult.passed ? 'text-emerald-600' : 'text-amber-600'">
+          :class="attemptResult.passed ? 'text-brand-600' : 'text-amber-600'">
           {{ attemptResult.score }}%
         </div>
         <p class="text-slate-600 mb-6">
@@ -114,8 +116,8 @@ const stars = (rating: number) => Array.from({ length: 5 }, (_, i) => i < rating
           {{ attemptResult.correctCount }} / {{ attemptResult.totalQuestions }} bonnes réponses
         </p>
 
-        <div v-if="attemptResult.passed" class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-100">
-          <p class="text-sm text-emerald-800">
+        <div v-if="attemptResult.passed" class="mb-6 p-4 rounded-xl bg-brand-50 border border-brand-100">
+          <p class="text-sm text-brand-800">
             Vous avez validé ce quiz. Vous pouvez continuer la formation.
           </p>
         </div>
@@ -131,7 +133,7 @@ const stars = (rating: number) => Array.from({ length: 5 }, (_, i) => i < rating
             Retour au cours
           </NuxtLink>
           <button
-            v-else
+            v-if="!attemptResult.passed"
             type="button"
             class="btn-secondary w-full sm:w-auto"
             @click="submitted = false; attemptResult = null; refresh()"
@@ -155,7 +157,7 @@ const stars = (rating: number) => Array.from({ length: 5 }, (_, i) => i < rating
           <span
             class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold"
             :class="
-              submitted ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'
+              submitted ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-500'
             "
           >
             {{ submitted ? 'Terminé' : 'À faire' }}
@@ -180,7 +182,7 @@ const stars = (rating: number) => Array.from({ length: 5 }, (_, i) => i < rating
                       type="button"
                       :class="
                         answers.value[question.id] === oIdx
-                          ? 'w-full text-left px-4 py-3 rounded-lg border border-emerald-500 bg-emerald-50 text-emerald-800 font-medium'
+                          ? 'w-full text-left px-4 py-3 rounded-lg border border-brand-500 bg-brand-50 text-brand-800 font-medium'
                           : 'w-full text-left px-4 py-3 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-50 transition'
                       "
                       @click="selectOption(question.id, oIdx)"
@@ -190,8 +192,8 @@ const stars = (rating: number) => Array.from({ length: 5 }, (_, i) => i < rating
                           class="w-5 h-5 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold"
                           :class="
                             answers.value[question.id] === oIdx
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-slate-200 text-slate-400'
+                           ? 'bg-brand-500 text-white'
+                           : 'bg-slate-200 text-slate-400'
                           "
                         >
                           {{ oIdx + 1 }}

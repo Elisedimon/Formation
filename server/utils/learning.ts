@@ -13,6 +13,9 @@ export async function requireCourseEditor(event: H3Event, courseId: string, secr
   return user
 }
 
+// CRT-01: seuil de score global pour la délivrance du certificat
+const GLOBAL_PASSING_SCORE = 70
+
 export async function completeEnrollmentIfReady(tx: Prisma.TransactionClient, enrollmentId: string) {
   const enrollment = await tx.enrollment.findUnique({
     where: { id: enrollmentId },
@@ -25,8 +28,27 @@ export async function completeEnrollmentIfReady(tx: Prisma.TransactionClient, en
   if (completedLessons !== lessonIds.length) return null
   const quizIds = enrollment.course.modules.flatMap(module => module.quizzes.map(quiz => quiz.id))
   if (quizIds.length) {
-    const passedQuizzes = await tx.quizAttempt.findMany({ where: { enrollmentId, quizId: { in: quizIds }, passed: true }, distinct: ['quizId'], select: { quizId: true } })
+    // Chaque quiz doit avoir au moins une tentative réussie
+    const passedQuizzes = await tx.quizAttempt.findMany({
+      where: { enrollmentId, quizId: { in: quizIds }, passed: true },
+      distinct: ['quizId'],
+      select: { quizId: true }
+    })
     if (passedQuizzes.length !== quizIds.length) return null
+
+    // CRT-01: score global = moyenne des meilleurs scores par quiz, doit être ≥ 70 %
+    const bestAttempts = await tx.quizAttempt.findMany({
+      where: { enrollmentId, quizId: { in: quizIds } },
+      orderBy: [{ quizId: 'asc' }, { score: 'desc' }],
+      select: { quizId: true, score: true }
+    })
+    const bestByQuiz = new Map<string, number>()
+    for (const a of bestAttempts) {
+      if (!bestByQuiz.has(a.quizId)) bestByQuiz.set(a.quizId, a.score)
+    }
+    const quizScores = quizIds.map(qid => bestByQuiz.get(qid) ?? 0)
+    const globalScore = quizScores.length ? Math.round(quizScores.reduce((a, b) => a + b, 0) / quizScores.length) : 0
+    if (globalScore < GLOBAL_PASSING_SCORE) return null
   }
   await tx.enrollment.update({ where: { id: enrollmentId }, data: { status: 'COMPLETED' } })
   const certificate = await tx.certificate.upsert({

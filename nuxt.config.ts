@@ -24,6 +24,12 @@ export default defineNuxtConfig({
     fedapaySecretKey: process.env.NUXT_FEDAPAY_SECRET_KEY || '',
     fedapayEnv: process.env.NUXT_FEDAPAY_ENV || 'sandbox',
 
+    smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
+    smtpPort: Number(process.env.SMTP_PORT) || 587,
+    smtpUser: process.env.SMTP_USER || '',
+    smtpPass: process.env.SMTP_PASS || '',
+    smtpFrom: process.env.SMTP_FROM || 'AST-Academy <noreply@example.com>',
+
     public: {
       appUrl: process.env.NUXT_PUBLIC_APP_URL || (process.env.NODE_ENV === 'production' ? '' : 'http://localhost:3000'),
       fedapayPublicKey: process.env.NUXT_PUBLIC_FEDAPAY_PUBLIC_KEY || '',

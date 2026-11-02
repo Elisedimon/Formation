@@ -1,5 +1,6 @@
 import { prisma } from '../../utils/prisma'
-import { hashPassword, generateEmailVerificationToken } from '../../utils/auth'
+import { hashPassword } from '../../utils/auth'
+import { sendEmail } from '../../utils/email'
 
 interface RegisterBody {
   email?: string
@@ -56,7 +57,7 @@ export default defineEventHandler(async (event) => {
       firstName,
       lastName,
       role: 'STUDENT',
-      isActive: false
+      isActive: true
     },
     select: {
       id: true,
@@ -69,17 +70,22 @@ export default defineEventHandler(async (event) => {
     }
   })
 
-  // Générer le token d'activation email
-  const verifyToken = await generateEmailVerificationToken(user.id)
-
-  // En dev, on affiche le token dans la console (pas de vrai envoi d'email pour l'instant)
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(`[Auth] Token d'activation pour ${email}: ${verifyToken}`)
-    console.log(`[Auth] Lien d'activation : http://localhost:3000/auth/verify-email?token=${verifyToken}`)
-  }
+  // Email de bienvenue
+  await sendEmail({
+    to: user.email,
+    subject: 'Bienvenue sur AST-Academy',
+    html: `
+      <h2>Bonjour ${user.firstName || ''} 👋</h2>
+      <p>Votre compte AST-Academy a été créé avec succès.</p>
+      <p>Vous pouvez désormais vous connecter et accéder à toutes nos formations.</p>
+      <hr />
+      <p style="font-size:12px;color:#666;">AST-Academy – Maîtrisez les technologies de demain</p>
+    `
+  })
 
   return {
     user,
-    message: 'Compte créé. Un email d’activation vous a été envoyé. Vérifiez votre boîte mail avant de vous connecter.'
+    message: 'Compte créé avec succès.'
   }
 })
+

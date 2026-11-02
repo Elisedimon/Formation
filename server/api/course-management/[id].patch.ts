@@ -27,6 +27,7 @@ export default defineEventHandler(async (event) => {
   if (typeof body.level === 'string') data.level = body.level.trim() || null
   if (typeof body.price === 'number' && Number.isInteger(body.price) && body.price >= 0) data.price = body.price
   if (typeof body.image === 'string') data.image = body.image.trim() || null
+  if (typeof body.icon === 'string') data.icon = body.icon.trim() || null
   if (typeof body.isPublished === 'boolean') data.isPublished = body.isPublished
 
   if (!Object.keys(data).length) throw createError({ statusCode: 400, statusMessage: 'Aucune modification valide.' })

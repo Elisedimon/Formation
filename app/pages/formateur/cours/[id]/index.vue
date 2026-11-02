@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 const route = useRoute()
 const { user, fetchMe } = useAuth()
 const courseId = computed(() => route.params.id as string)
@@ -36,6 +36,7 @@ interface Course {
   price: number
   image: string | null
   isPublished: boolean
+  icon?: string | null
   modules: CourseModule[]
 }
 
@@ -46,6 +47,15 @@ const { data, pending, error, refresh } = await useFetch<{ course: Course }>(
 
 const course = computed(() => data.value?.course)
 
+async function updateIcon(icon: string) {
+  try {
+    await $fetch(`/api/course-management/${courseId.value}`, { method: 'PATCH', body: { icon } })
+    await refresh()
+  } catch (e: any) {
+    alert(e?.data?.statusMessage || 'Erreur.')
+  }
+}
+
 const showModuleForm = ref(false)
 const newModule = reactive({ title: '', description: '' })
 const moduleError = ref('')
@@ -53,7 +63,7 @@ const editingModuleId = ref<string | null>(null)
 const editModule = reactive({ title: '', description: '' })
 
 const editingLessonId = ref<string | null>(null)
-const editLessonData = reactive({ title: '', content: '', videoUrl: '', durationMinutes: '' })
+const editLessonData = reactive({ title: '', content: '', videoUrl: '', durationMinutes: '', type: 'text' as 'text' | 'video' | 'pdf', fileUrl: '' })
 
 const lessonError = ref('')
 const quizError = ref('')
@@ -62,7 +72,9 @@ const newQuiz = reactive({ title: '', passingScore: 70, questions: [] as Array<{
 
 const newLessonTitle = reactive<Record<string, string>>({})
 const newLessonContent = reactive<Record<string, string>>({})
+const newLessonType = reactive<Record<string, 'text' | 'video' | 'pdf'>>({})
 const newLessonVideo = reactive<Record<string, string>>({})
+const newLessonFileUrl = reactive<Record<string, string>>({})
 const newLessonDuration = reactive<Record<string, string>>({})
 
 const money = (value: number) => new Intl.NumberFormat('fr-FR').format(value) + ' FCFA'
@@ -106,19 +118,34 @@ async function createLesson(moduleId: string) {
   lessonError.value = ''
   const title = newLessonTitle[moduleId]?.trim()
   if (!title) { lessonError.value = 'Le titre est requis.'; return }
+  const type = newLessonType[moduleId] || 'text'
+  let content: string | undefined
+  let videoUrl: string | undefined
+  if (type === 'text') {
+    content = newLessonContent[moduleId]?.trim() || undefined
+  } else if (type === 'video') {
+    videoUrl = newLessonVideo[moduleId]?.trim() || undefined
+    if (videoUrl && !/^https:\/\//i.test(videoUrl)) { lessonError.value = 'Le lien vidéo doit commencer par https://.'; return }
+  } else if (type === 'pdf') {
+    content = newLessonFileUrl[moduleId]?.trim() || undefined
+    if (!content) { lessonError.value = 'L’URL du PDF est requise.'; return }
+  }
   try {
     await $fetch(`/api/course-management/modules/${moduleId}`, {
       method: 'POST',
       body: {
+        kind: type,
         title,
-        content: newLessonContent[moduleId]?.trim() || undefined,
-        videoUrl: newLessonVideo[moduleId]?.trim() || undefined,
+        content,
+        videoUrl,
         durationMinutes: newLessonDuration[moduleId] ? Number(newLessonDuration[moduleId]) : undefined
       }
     })
     newLessonTitle[moduleId] = ''
     newLessonContent[moduleId] = ''
+    newLessonType[moduleId] = 'text'
     newLessonVideo[moduleId] = ''
+    newLessonFileUrl[moduleId] = ''
     newLessonDuration[moduleId] = ''
     await refresh()
   } catch (e: any) { lessonError.value = e?.data?.statusMessage || 'Échec de la création de la leçon.' }
@@ -126,28 +153,45 @@ async function createLesson(moduleId: string) {
 
 async function editLesson(moduleId: string, lesson: Lesson) {
   editingLessonId.value = lesson.id
+  const isVideo = !!lesson.videoUrl
+  const isPdf = !!lesson.content && lesson.content.startsWith('http')
   Object.assign(editLessonData, {
     title: lesson.title,
-    content: lesson.content || '',
+    content: (isVideo || isPdf) ? '' : (lesson.content || ''),
     videoUrl: lesson.videoUrl || '',
-    durationMinutes: lesson.durationMinutes ? String(lesson.durationMinutes) : ''
+    fileUrl: isPdf ? lesson.content : '',
+    durationMinutes: lesson.durationMinutes ? String(lesson.durationMinutes) : '',
+    type: isVideo ? 'video' : isPdf ? 'pdf' : 'text'
   })
 }
 
 async function saveLesson(moduleId: string, lessonId: string) {
   lessonError.value = ''
+  const type = editLessonData.type
+  let content: string | undefined
+  let videoUrl: string | undefined
+  if (type === 'text') {
+    content = editLessonData.content.trim() || undefined
+  } else if (type === 'video') {
+    videoUrl = editLessonData.videoUrl.trim() || undefined
+    if (videoUrl && !/^https:\/\//i.test(videoUrl)) { lessonError.value = 'Le lien vidéo doit commencer par https://.'; return }
+  } else if (type === 'pdf') {
+    content = editLessonData.fileUrl.trim() || undefined
+    if (!content) { lessonError.value = 'L’URL du PDF est requise.'; return }
+  }
   try {
     await $fetch(`/api/course-management/modules/${moduleId}/lessons/${lessonId}`, {
       method: 'PATCH',
       body: {
+        kind: type,
         title: editLessonData.title.trim(),
-        content: editLessonData.content.trim() || undefined,
-        videoUrl: editLessonData.videoUrl.trim() || undefined,
+        content,
+        videoUrl,
         durationMinutes: editLessonData.durationMinutes ? Number(editLessonData.durationMinutes) : undefined
       }
     })
     editingLessonId.value = null
-    Object.assign(editLessonData, { title: '', content: '', videoUrl: '', durationMinutes: '' })
+    Object.assign(editLessonData, { title: '', content: '', videoUrl: '', durationMinutes: '', type: 'text', fileUrl: '' })
     await refresh()
   } catch (e: any) { lessonError.value = e?.data?.statusMessage || 'Échec de la mise à jour.' }
 }
@@ -215,7 +259,7 @@ async function togglePublish() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 pb-20 pt-28">
+  <div class="min-h-screen bg-slate-50 pb-20">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div class="mb-8 flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -236,6 +280,19 @@ async function togglePublish() {
       <div v-else-if="course" class="space-y-8">
         <!-- Infos du cours -->
         <div class="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8 shadow-sm">
+          <div class="mb-4 flex items-center gap-3">
+            <label class="text-sm font-medium text-slate-700">Icône du certificat</label>
+            <select class="form-input max-w-xs" :value="course?.icon || ''" @change="updateIcon(($event.target as HTMLSelectElement).value)">
+              <option value="">Automatique</option>
+              <option value="code">Code</option>
+              <option value="marketing">Marketing</option>
+              <option value="excel">Excel</option>
+              <option value="data">Data</option>
+              <option value="projet">Projet</option>
+              <option value="idee">Idée</option>
+              <option value="diplome">Diplôme</option>
+            </select>
+          </div>
           <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
             <div>
               <p class="text-xs text-slate-500 uppercase">Prix</p>
@@ -261,7 +318,7 @@ async function togglePublish() {
         </div>
 
         <!-- Nouveau chapitre -->
-        <div v-if="showModuleForm" class="rounded-2xl border border-emerald-200 bg-emerald-50 p-6 mb-6">
+        <div v-if="showModuleForm" class="rounded-2xl border border-brand-200 bg-brand-50 p-6 mb-6">
           <h3 class="font-bold text-slate-900 mb-3">Nouveau chapitre</h3>
           <form class="grid grid-cols-1 md:grid-cols-2 gap-4" @submit.prevent="createModule">
             <label class="form-label">Titre<input v-model="newModule.title" required class="form-input"></label>
@@ -284,7 +341,7 @@ async function togglePublish() {
             </div>
             <div class="flex items-center gap-2">
               <button v-if="editingModuleId.value === module.id" type="button" class="btn-primary !px-3 !py-2 text-xs" @click="updateModule(module.id)">Enregistrer</button>
-              <button v-else type="button" class="text-slate-500 hover:text-emerald-600 text-sm" @click="editingModuleId.value = module.id; Object.assign(editModule, { title: module.title, description: module.description || '' })">Modifier</button>
+              <button v-else type="button" class="text-slate-500 hover:text-brand-600 text-sm" @click="editingModuleId.value = module.id; Object.assign(editModule, { title: module.title, description: module.description || '' })">Modifier</button>
               <button type="button" class="text-red-600 hover:text-red-800 text-sm" @click="deleteModule(module.id)">Supprimer</button>
             </div>
           </div>
@@ -300,24 +357,54 @@ async function togglePublish() {
           <!-- Leçons -->
           <div class="mb-6">
             <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-              <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 19L9 12m0 0l-4-4m4 4l4-4m4 4V9m0 0l-4-4m4 4l4-4"/></svg>
+              <svg class="w-4 h-4 text-brand-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 19L9 12m0 0l-4-4m4 4l4-4m4 4V9m0 0l-4-4m4 4l4-4"/></svg>
               Leçons ({{ module.lessons.length }})
             </h4>
             <form :id="`lesson-form-${module.id}`" class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4" @submit.prevent="() => createLesson(module.id)">
-              <input :id="`lesson-title-${module.id}`" v-model="newLessonTitle[module.id]" placeholder="Titre de la leçon" required class="form-input">
-              <textarea :id="`lesson-content-${module.id}`" v-model="newLessonContent[module.id]" rows="1" placeholder="Contenu (optionnel)" class="form-input"></textarea>
-              <input :id="`lesson-video-${module.id}`" v-model="newLessonVideo[module.id]" type="url" placeholder="Lien vidéo https://..." class="form-input">
-              <input :id="`lesson-duration-${module.id}`" v-model="newLessonDuration[module.id]" type="number" min="0" placeholder="Min" class="form-input">
+              <div class="flex flex-col">
+                <label class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Type</label>
+                <select v-model="newLessonType[module.id] || 'text'" class="form-input text-sm">
+                  <option value="text">Texte</option>
+                  <option value="video">Vidéo</option>
+                  <option value="pdf">PDF / Document</option>
+                </select>
+              </div>
+              <input :id="`lesson-title-${module.id}`" v-model="newLessonTitle[module.id]" placeholder="Titre de la leçon" required class="form-input" />
+              <div v-if="newLessonType[module.id] === 'text'">
+                <textarea :id="`lesson-content-${module.id}`" v-model="newLessonContent[module.id]" rows="1" placeholder="Contenu de la leçon" class="form-input"></textarea>
+              </div>
+              <div v-else-if="newLessonType[module.id] === 'video'">
+                <input :id="`lesson-video-${module.id}`" v-model="newLessonVideo[module.id]" type="url" placeholder="Lien vidéo https://…" class="form-input" />
+              </div>
+              <div v-else-if="newLessonType[module.id] === 'pdf'">
+                <input :id="`lesson-file-${module.id}`" v-model="newLessonFileUrl[module.id]" type="url" placeholder="Lien du PDF https://…" class="form-input" />
+              </div>
+              <input :id="`lesson-duration-${module.id}`" v-model="newLessonDuration[module.id]" type="number" min="0" placeholder="Min" class="form-input" />
               <button type="submit" class="btn-primary">Ajouter</button>
             </form>
             <p v-if="lessonError" class="text-sm text-red-700 mb-4">{{ lessonError }}</p>
 
             <div v-for="(lesson, lIdx) in module.lessons" :key="lesson.id" class="p-3 rounded-lg border border-slate-100 bg-slate-50 mb-2">
               <div v-if="editingLessonId.value === lesson.id" class="flex flex-col gap-2">
-                <input v-model="editLessonData.title" placeholder="Titre" class="form-input w-full">
-                <textarea v-model="editLessonData.content" rows="2" placeholder="Contenu" class="form-input w-full"></textarea>
-                <input v-model="editLessonData.videoUrl" type="url" placeholder="Lien vidéo" class="form-input w-full">
-                <input v-model="editLessonData.durationMinutes" type="number" min="0" placeholder="Min" class="form-input w-full md:w-32">
+                <div class="flex flex-col">
+                  <label class="text-xs font-medium text-slate-500 uppercase tracking-wider mb-1">Type</label>
+                  <select v-model="editLessonData.type" class="form-input text-sm mb-2">
+                    <option value="text">Texte</option>
+                    <option value="video">Vidéo</option>
+                    <option value="pdf">PDF / Document</option>
+                  </select>
+                </div>
+                <input v-model="editLessonData.title" placeholder="Titre" class="form-input w-full mb-2" />
+                <div v-if="editLessonData.type === 'text'">
+                  <textarea v-model="editLessonData.content" rows="2" placeholder="Contenu" class="form-input w-full mb-2"></textarea>
+                </div>
+                <div v-else-if="editLessonData.type === 'video'">
+                  <input v-model="editLessonData.videoUrl" type="url" placeholder="Lien vidéo https://…" class="form-input w-full mb-2" />
+                </div>
+                <div v-else-if="editLessonData.type === 'pdf'">
+                  <input v-model="editLessonData.fileUrl" type="url" placeholder="Lien du PDF https://…" class="form-input w-full mb-2" />
+                </div>
+                <input v-model="editLessonData.durationMinutes" type="number" min="0" placeholder="Min" class="form-input w-full md:w-32 mb-2" />
                 <div class="flex gap-2">
                   <button type="button" class="btn-primary !px-3 !py-2 text-xs" @click="saveLesson(module.id, lesson.id)">Enregistrer</button>
                   <button type="button" class="text-slate-500 hover:text-slate-700 text-xs" @click="editingLessonId.value = null">Annuler</button>
@@ -328,11 +415,25 @@ async function togglePublish() {
                   <span class="text-xs font-bold text-slate-500">{{ lesson.position }}</span>
                   <div>
                     <p class="text-sm font-semibold text-slate-800">{{ lesson.title }}</p>
-                    <p class="text-xs text-slate-500">{{ lesson.durationMinutes ? lesson.durationMinutes + ' min' : '' }} {{ lesson.videoUrl ? '· Vidéo' : lesson.content ? '· Texte' : '· Vide' }}</p>
+                    <div class="flex items-center gap-1.5">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium"
+                            :class="
+                              lesson.videoUrl ? 'bg-brand-100 text-brand-800'
+                                : lesson.content && lesson.content.startsWith('http') ? 'bg-amber-100 text-amber-800'
+                                : 'bg-slate-100 text-slate-700'
+                            "
+                      >
+                        <span v-if="lesson.videoUrl" class="w-1.5 h-1.5 rounded-full bg-brand-500"></span>
+                        <span v-else-if="lesson.content && lesson.content.startsWith('http')" class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <span v-else class="w-1.5 h-1.5 rounded-full bg-slate-500"></span>
+                        {{ lesson.videoUrl ? 'Vidéo' : lesson.content && lesson.content.startsWith('http') ? 'PDF' : 'Texte' }}
+                      </span>
+                      <span v-if="lesson.durationMinutes" class="text-[10px] text-slate-500">· {{ lesson.durationMinutes }} min</span>
+                    </div>
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button type="button" class="text-slate-500 hover:text-emerald-600 text-sm" @click="editLesson(module.id, lesson)">Modifier</button>
+                  <button type="button" class="text-slate-500 hover:text-brand-600 text-sm" @click="editLesson(module.id, lesson)">Modifier</button>
                   <button type="button" class="text-red-600 hover:text-red-800 text-sm" @click="deleteLesson(module.id, lesson.id)">Supprimer</button>
                 </div>
               </div>
@@ -354,7 +455,7 @@ async function togglePublish() {
             </div>
           </div>
 
-          <button v-if="!showQuizForm || showQuizForm.value !== module.id" type="button" class="text-emerald-600 font-semibold hover:text-emerald-800 text-sm mb-4" @click="showQuizForm.value = module.id">+ Ajouter un quiz à ce chapitre</button>
+          <button v-if="!showQuizForm || showQuizForm.value !== module.id" type="button" class="text-brand-600 font-semibold hover:text-brand-800 text-sm mb-4" @click="showQuizForm.value = module.id">+ Ajouter un quiz à ce chapitre</button>
 
           <div v-if="showQuizForm.value === module.id" class="mt-4 p-4 rounded-xl bg-amber-50 border border-amber-100">
             <h5 class="font-bold text-slate-800 mb-3">Nouveau quiz</h5>
@@ -365,9 +466,9 @@ async function togglePublish() {
               <input v-model="q.prompt" placeholder="Question" class="form-input w-full">
               <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="flex gap-2">
                 <input v-model="q.options[oIdx]" placeholder="Option de réponse" class="form-input">
-                <button v-if="q.options.length > 2" type="button" class="text-red-500 hover:text-red-700" @click="removeOption(qIdx, oIdx)">−</button>
+                <button v-if="q.options.length > 2" type="button" class="text-red-500 hover:text-red-700" @click="removeOption(qIdx, oIdx)">-</button>
               </div>
-              <button type="button" class="text-xs text-emerald-600 hover:underline" @click="addOption(qIdx)">+ Option</button>
+              <button type="button" class="text-xs text-brand-600 hover:underline" @click="addOption(qIdx)">+ Option</button>
               <div class="flex items-center gap-2 mt-1">
                 <label class="text-xs text-slate-600">Bonne réponse :</label>
                 <select v-model="q.correctAnswer" class="form-input !w-auto !py-2 text-xs">
@@ -376,7 +477,7 @@ async function togglePublish() {
               </div>
               <button type="button" class="text-red-500 hover:text-red-700 text-xs mt-1" @click="removeQuestion(qIdx)">Supprimer la question</button>
             </div>
-            <button type="button" class="text-xs text-emerald-600 hover:underline mb-2" @click="addQuestion">+ Question</button>
+            <button type="button" class="text-xs text-brand-600 hover:underline mb-2" @click="addQuestion">+ Question</button>
             <p v-if="quizError" class="text-sm text-amber-700 mt-2">{{ quizError }}</p>
             <div class="flex gap-3">
               <button type="button" class="btn-primary" @click="createQuiz(module.id)">Créer le quiz</button>
@@ -388,3 +489,4 @@ async function togglePublish() {
     </div>
   </div>
 </template>
+

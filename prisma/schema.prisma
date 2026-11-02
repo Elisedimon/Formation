@@ -27,6 +27,10 @@ model User {
   certificates                  Certificate[]
   receipts                      Receipt[]
   reviews                       Review[]
+  reviewLikes                  ReviewLike[]
+  studentDiscussions           Discussion[] @relation("StudentDiscussions")
+  instructorDiscussions        Discussion[] @relation("InstructorDiscussions")
+  sentMessages                 Message[]     @relation("SentMessages")
 }
 
 model Course {
@@ -39,6 +43,7 @@ model Course {
   level        String?
   price        Int // in FCFA
   image        String?
+  icon         String?
   isPublished  Boolean        @default(false)
   instructorId String?
   createdAt    DateTime       @default(now())
@@ -46,6 +51,7 @@ model Course {
   enrollments  Enrollment[]
   payments     Payment[]
   modules      CourseModule[]
+  discussions  Discussion[]
   instructor   User?          @relation("CourseInstructor", fields: [instructorId], references: [id], onDelete: SetNull)
   reviews      Review[]
 
@@ -197,9 +203,61 @@ model Review {
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id])
   course    Course   @relation(fields: [courseId], references: [id])
+  likes     ReviewLike[]
 
   @@unique([userId, courseId])
   @@index([courseId])
+}
+
+model ReviewLike {
+  id        String   @id @default(cuid())
+  userId    String
+  reviewId  String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, reviewId])
+  @@index([reviewId])
+}
+
+model Discussion {
+  id           String           @id @default(cuid())
+  courseId     String
+  course       Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  studentId    String
+  student      User             @relation("StudentDiscussions", fields: [studentId], references: [id])
+  instructorId String
+  instructor   User             @relation("InstructorDiscussions", fields: [instructorId], references: [id])
+  subject      String
+  status       DiscussionStatus @default(OPEN)
+  messages     Message[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([courseId])
+  @@index([studentId])
+  @@index([instructorId])
+}
+
+model Message {
+  id           String     @id @default(cuid())
+  discussionId String
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  senderId     String
+  sender       User       @relation("SentMessages", fields: [senderId], references: [id])
+  content      String
+  read         Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+
+  @@index([discussionId])
+  @@index([senderId])
+}
+
+enum DiscussionStatus {
+  OPEN
+  RESOLVED
+  CLOSED
 }
 
 enum Role {
@@ -219,4 +277,13 @@ enum PaymentStatus {
   APPROVED
   DECLINED
   CANCELLED
+  REFUNDED
+}
+
+model PlatformSetting {
+  key       String   @id
+  value     String
+  type      String   @default("string")
+  updatedAt DateTime @updatedAt
+  updatedBy String?
 }

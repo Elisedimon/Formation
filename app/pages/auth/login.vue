@@ -17,10 +17,12 @@ const error = ref('')
 async function onSubmit() {
   loading.value = true
   error.value = ''
+  console.log('[Login] email:', email.value, '| password length:', password.value.length)
   try {
     await login(email.value, password.value)
     await navigateTo(redirectPath.value)
   } catch (e: any) {
+    console.error('[Login] error:', e)
     error.value =
       e?.data?.statusMessage ||
       e?.statusMessage ||
@@ -32,10 +34,10 @@ async function onSubmit() {
 </script>
 
 <template>
-  <div class="pt-28 pb-20 min-h-[75vh] flex items-center bg-slate-50">
+  <div class="pb-20 min-h-[75vh] flex items-center bg-slate-50">
     <div class="max-w-md w-full mx-auto px-4">
       <div class="text-center mb-8">
-        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-700 to-emerald-800 flex items-center justify-center font-bold text-white text-xl mx-auto mb-4 shadow-md shadow-emerald-700/30">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-brand-700 to-brand-800 flex items-center justify-center font-bold text-white text-xl mx-auto mb-4 shadow-md shadow-brand/25">
           A
         </div>
         <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 mb-2">Bon retour !</h1>
@@ -94,8 +96,13 @@ async function onSubmit() {
 
         <p class="text-center text-sm text-slate-500">
           Pas encore de compte ?
-          <NuxtLink :to="{ path: '/auth/register', query: route.query }" class="text-emerald-600 font-semibold hover:underline">
+          <NuxtLink :to="{ path: '/auth/register', query: route.query }" class="text-brand-600 font-semibold hover:underline">
             Créer un compte
+          </NuxtLink>
+        </p>
+        <p class="text-center text-sm text-slate-500 mt-2">
+          <NuxtLink to="/auth/forgot-password" class="text-brand-600 font-semibold hover:underline">
+            Mot de passe oublié ?
           </NuxtLink>
         </p>
       </form>

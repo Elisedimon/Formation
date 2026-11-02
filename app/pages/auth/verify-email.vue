@@ -47,12 +47,12 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="pt-28 pb-20 min-h-[75vh] flex items-center bg-slate-50">
+  <div class="pb-20 min-h-[75vh] flex items-center bg-slate-50">
     <div class="max-w-md w-full mx-auto px-4">
       <div class="text-center mb-8">
         <div
           class="w-12 h-12 rounded-full flex items-center justify-center font-bold text-white text-xl mx-auto mb-4"
-          :class="verified ? 'bg-emerald-600' : 'bg-amber-600'"
+          :class="verified ? 'bg-brand-600' : 'bg-amber-600'"
         >
           <span>{{ verified ? '✓' : '!' }}</span>
         </div>
@@ -65,12 +65,12 @@ onMounted(() => {
       </div>
 
       <div v-if="verifying" class="card p-6 sm:p-8 text-center">
-        <div class="inline-block w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin mb-4" />
+        <div class="inline-block w-8 h-8 border-2 border-brand-500 border-t-transparent rounded-full animate-spin mb-4" />
         <p class="text-slate-600">Activation en cours…</p>
       </div>
 
       <div v-else-if="verified" class="card p-6 sm:p-8 text-center">
-        <div class="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center font-bold text-emerald-600 text-xl mx-auto mb-4">
+        <div class="w-12 h-12 rounded-full bg-brand-100 flex items-center justify-center font-bold text-brand-600 text-xl mx-auto mb-4">
           ✓
         </div>
         <h2 class="text-xl font-bold text-slate-900 mb-2">Compte activé avec succès</h2>
@@ -82,7 +82,7 @@ onMounted(() => {
         </button>
         <p class="mt-4 text-sm text-slate-500">
           Déjà un compte ?
-          <NuxtLink to="/auth/login" class="text-emerald-600 font-semibold hover:underline">
+          <NuxtLink to="/auth/login" class="text-brand-600 font-semibold hover:underline">
             Connexion
           </NuxtLink>
         </p>

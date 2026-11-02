@@ -33,9 +33,9 @@ const formatPrice = (price: number) =>
 <template>
   <NuxtLink
     :to="`/formations/${course.id}`"
-    class="group block card card-hover overflow-hidden"
+    class="group block card card-hover overflow-hidden h-full flex flex-col min-h-[420px]"
   >
-    <div class="aspect-[16/10] bg-gradient-to-br from-slate-100 to-emerald-50 relative overflow-hidden">
+    <div class="aspect-[16/10] bg-gradient-to-br from-ink-100 to-brand-50 relative overflow-hidden">
       <img
         v-if="courseImage"
         :src="courseImage"
@@ -50,7 +50,7 @@ const formatPrice = (price: number) =>
           {{ course.category?.[0] || 'F' }}
         </div>
       </div>
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950/20 to-transparent" />
+      <div class="absolute inset-0 bg-gradient-to-t from-ink-950/20 to-transparent" />
       <div class="absolute top-3 left-3">
         <span class="badge !bg-white/95 !backdrop-blur-sm shadow-sm">
           {{ course.category }}
@@ -58,25 +58,25 @@ const formatPrice = (price: number) =>
       </div>
     </div>
 
-    <div class="p-5">
-      <h3 class="font-semibold text-slate-900 text-lg mb-2 group-hover:text-emerald-700 transition-colors duration-300 line-clamp-2">
+    <div class="p-5 flex flex-col justify-between h-full">
+      <h3 class="font-semibold text-ink-900 text-lg mb-2 group-hover:text-brand-700 transition-colors duration-300 line-clamp-2">
         {{ course.title }}
       </h3>
 
-      <div class="flex items-center gap-3 text-xs text-slate-500 mb-4">
+      <div class="flex items-center gap-3 text-xs text-ink-500 mb-4">
         <span class="flex items-center gap-1">
           <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
           {{ course.duration }}
         </span>
-        <span class="w-1 h-1 rounded-full bg-slate-300" />
+        <span class="w-1 h-1 rounded-full bg-ink-300" />
         <span>{{ course.level }}</span>
       </div>
 
       <div class="flex items-center justify-between">
-        <span class="font-bold text-emerald-600">{{ formatPrice(course.price) }}</span>
-        <span class="text-sm text-slate-400 group-hover:text-emerald-600 transition-colors flex items-center gap-1 font-medium">
+        <span class="font-bold text-brand-600">{{ formatPrice(course.price) }}</span>
+        <span class="text-sm text-ink-400 group-hover:text-brand-600 transition-colors flex items-center gap-1 font-medium">
           Voir
           <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
